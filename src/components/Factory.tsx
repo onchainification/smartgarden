@@ -40,7 +40,7 @@ export function Factory() {
   /* Here we start using the magic hooks from wagmi to write & read in the dummy SC */
 
   const { config } = usePrepareModuleFactoryCreateModule({
-    args: [address!, BigInt(cadenceTs)],
+    args: [vaultAddress as `0x${string}`, BigInt(cadenceTs)],
   });
 
   const { data, write } = useModuleFactoryCreateModule({
