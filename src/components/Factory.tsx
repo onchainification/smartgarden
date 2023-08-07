@@ -13,7 +13,11 @@ import {
   dummyModuleABI,
 } from "../generated";
 
-const NULL_ADDR = '0x0000000000000000000000000000000000000000'
+import { UpdateModuleConfig } from "./Module";
+
+import { ProcessingMessage } from "./HashProcessor";
+
+const NULL_ADDR = "0x0000000000000000000000000000000000000000";
 
 export function Factory() {
   const { address } = useAccount();
@@ -62,6 +66,8 @@ export function Factory() {
     args: [address!],
   });
 
+  // Module section: read config and allow update them
+
   const getModuleCadence = (addr: `0x${string}`) => {
     const { data } = useContractRead({
       address: addr,
@@ -94,21 +100,60 @@ export function Factory() {
       <div className="basis-1/4">
         <h2>
           Display existing deployed module for msg.sender 👀:
-          {moduleAddress != NULL_ADDR
-            ? <span style={{ marginLeft: 10 }}>{moduleAddress}</span>
-            : <span style={{ marginLeft: 10 }}>"None had being deployed..."</span>}
+          {moduleAddress != NULL_ADDR ? (
+            <span style={{ marginLeft: 10 }}>{moduleAddress}</span>
+          ) : (
+            <span style={{ marginLeft: 10 }}>"None had being deployed..."</span>
+          )}
         </h2>
         {moduleAddress != NULL_ADDR && (
           <>
             <h3>Current module config:</h3>
-            <h5>
-              Vault ERC-4626: {getModuleVaultAddress(moduleAddress)}
-              <button style={{ marginLeft: 20 }}>Update Addr(TODO)</button>
-            </h5>
-            <h5>
-              Cadence: {getModuleCadence(moduleAddress)}
-              <button style={{ marginLeft: 20 }}>Update Cadence(TODO)</button>
-            </h5>
+            <div>
+              <h5>Vault ERC-4626: {getModuleVaultAddress(moduleAddress)}</h5>
+              <input
+                onChange={(e) => setVaultAddress(e.target.value)}
+                value={vaultAddress}
+                style={{ marginRight: 10, width: 320 }}
+              />
+              <UpdateModuleConfig
+                addr={moduleAddress}
+                method={"setVault"}
+                btnTxt={"Update Vault address"}
+                loadingTxt={"Updating new vault erc-4626 address ..."}
+                newVal={vaultAddress as `0x${string}`}
+              />
+            </div>
+            <div>
+              <h5>
+                Cadence:{" "}
+                {
+                  cadenceOptions.find(
+                    (el) =>
+                      el.sec.toString() == getModuleCadence(moduleAddress),
+                  )?.str
+                }
+              </h5>
+              <select
+                onChange={onCadenceChangeAction}
+                style={{ marginRight: 10 }}
+              >
+                {cadenceOptions.map((option, index) => {
+                  return (
+                    <option key={index} value={option.sec}>
+                      {option.str}
+                    </option>
+                  );
+                })}
+              </select>
+              <UpdateModuleConfig
+                addr={moduleAddress}
+                method={"setCadence"}
+                btnTxt={"Update Cadence"}
+                loadingTxt={"Updating new cadence value ..."}
+                newVal={BigInt(cadenceTs)}
+              />
+            </div>
           </>
         )}
       </div>
@@ -137,18 +182,5 @@ export function Factory() {
       </div>
       {isLoading && <ProcessingMessage hash={data?.hash} />}
     </div>
-  );
-}
-
-function ProcessingMessage({ hash }: { hash?: `0x${string}` }) {
-  const { chain } = useNetwork();
-  const etherscan = chain?.blockExplorers?.etherscan;
-  return (
-    <span>
-      Processing transaction...{" "}
-      {etherscan && (
-        <a href={`${etherscan.url}/tx/${hash}`}>{etherscan.name}</a>
-      )}
-    </span>
   );
 }
