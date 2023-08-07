@@ -7,10 +7,10 @@ contract DummyModule {
   ////////////////////////////////////////////////////////////////////////////
 
   /// @notice erc-4626 compliance address
-  address vault;
+  address public vault;
 
   /// @notice processing cadence in seconds
-  uint256 cadence;
+  uint256 public cadence;
 
   constructor(address _vault, uint256 _cadence) {
     vault = _vault;

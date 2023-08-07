@@ -1,12 +1,19 @@
 import { useState } from "react";
-import { useAccount, useNetwork, useWaitForTransaction } from "wagmi";
-import { parseAddress } from "@eth-optimism/atst";
+import {
+  useAccount,
+  useNetwork,
+  useWaitForTransaction,
+  useContractRead,
+} from "wagmi";
 
 import {
   useModuleFactoryCreateModule,
   usePrepareModuleFactoryCreateModule,
   useModuleFactoryDeployedModules,
+  dummyModuleABI,
 } from "../generated";
+
+const NULL_ADDR = '0x0000000000000000000000000000000000000000'
 
 export function Factory() {
   const { address } = useAccount();
@@ -55,6 +62,28 @@ export function Factory() {
     args: [address!],
   });
 
+  const getModuleCadence = (addr: `0x${string}`) => {
+    const { data } = useContractRead({
+      address: addr,
+      abi: dummyModuleABI,
+      functionName: "cadence",
+      watch: true,
+    });
+
+    return data?.toString();
+  };
+
+  const getModuleVaultAddress = (addr: `0x${string}`) => {
+    const { data } = useContractRead({
+      address: addr,
+      abi: dummyModuleABI,
+      functionName: "vault",
+      watch: true,
+    });
+
+    return data?.toString();
+  };
+
   const { isLoading } = useWaitForTransaction({
     hash: data?.hash,
     onSuccess: () => refetch(),
@@ -63,10 +92,25 @@ export function Factory() {
   return (
     <div className="flex flex-row justify-between items-center">
       <div className="basis-1/4">
-        Display existing deployed module for msg.sender 👀:{" "}
-        {moduleAddress
-          ? parseAddress(moduleAddress)
-          : "None had being deployed..."}
+        <h2>
+          Display existing deployed module for msg.sender 👀:
+          {moduleAddress != NULL_ADDR
+            ? <span style={{ marginLeft: 10 }}>{moduleAddress}</span>
+            : <span style={{ marginLeft: 10 }}>"None had being deployed..."</span>}
+        </h2>
+        {moduleAddress != NULL_ADDR && (
+          <>
+            <h3>Current module config:</h3>
+            <h5>
+              Vault ERC-4626: {getModuleVaultAddress(moduleAddress)}
+              <button style={{ marginLeft: 20 }}>Update Addr(TODO)</button>
+            </h5>
+            <h5>
+              Cadence: {getModuleCadence(moduleAddress)}
+              <button style={{ marginLeft: 20 }}>Update Cadence(TODO)</button>
+            </h5>
+          </>
+        )}
       </div>
       <div>
         <h1>Configure your module preferences 🙏</h1>

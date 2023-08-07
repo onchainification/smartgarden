@@ -2,8 +2,8 @@ import { defineConfig } from "@wagmi/cli";
 import { foundry, react } from "@wagmi/cli/plugins";
 import * as chains from "wagmi/chains";
 
-// https://goerli-optimism.etherscan.io/address/0x8ff2d0baa60219ab2320029053eb77f8791b8fcc#code
-const MODULE_FACTORY_ADDRESS = "0x8fF2d0BAa60219aB2320029053Eb77f8791B8Fcc";
+// https://goerli-optimism.etherscan.io/address/0x1144460C8D6D36b7eB2A16a7FFf2E84a294C2d96#code
+const MODULE_FACTORY_ADDRESS = "0x1144460C8D6D36b7eB2A16a7FFf2E84a294C2d96";
 
 /**
  * Wagmi cli will automatically generate react hooks from your forge contracts
