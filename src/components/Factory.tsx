@@ -1,9 +1,5 @@
 import { useState } from "react";
-import {
-  useAccount,
-  useWaitForTransaction,
-  useContractRead,
-} from "wagmi";
+import { useAccount, useWaitForTransaction, useContractRead } from "wagmi";
 
 import {
   useModuleFactoryCreateModule,
@@ -124,13 +120,8 @@ export function Factory() {
             </div>
             <div>
               <h5>
-                Cadence:{" "}
-                {
-                  cadenceOptions.find(
-                    (el) =>
-                      el.sec.toString() == getModuleCadence(moduleAddress),
-                  )?.str
-                }
+                Cadence:
+                {getModuleCadence(moduleAddress)}
               </h5>
               <select
                 onChange={onCadenceChangeAction}
