@@ -8,7 +8,6 @@ export function UpdateModuleConfig({
   addr,
   method,
   btnTxt,
-  loadingTxt,
   newVal,
 }: {
   addr?: `0x${string}`;

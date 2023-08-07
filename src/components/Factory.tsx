@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   useAccount,
-  useNetwork,
   useWaitForTransaction,
   useContractRead,
 } from "wagmi";
@@ -120,7 +119,6 @@ export function Factory() {
                 addr={moduleAddress}
                 method={"setVault"}
                 btnTxt={"Update Vault address"}
-                loadingTxt={"Updating new vault erc-4626 address ..."}
                 newVal={vaultAddress as `0x${string}`}
               />
             </div>
@@ -150,7 +148,6 @@ export function Factory() {
                 addr={moduleAddress}
                 method={"setCadence"}
                 btnTxt={"Update Cadence"}
-                loadingTxt={"Updating new cadence value ..."}
                 newVal={BigInt(cadenceTs)}
               />
             </div>
