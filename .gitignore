@@ -50,7 +50,3 @@ next-env.d.ts
 
 out
 cache
-
-# wagmi
-
-src/generated.ts
