@@ -13,7 +13,7 @@ export function App() {
 
   return (
     <>
-      <h1>Onchainification Factory</h1>
+      <h1>SmartGarden Factory</h1>
 
       {/** @see https://www.rainbowkit.com/docs/connect-button */}
       <ConnectButton />
