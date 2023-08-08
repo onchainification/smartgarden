@@ -1,0 +1,9 @@
+{
+  "build": {
+    "image": "node:18.17-alpine",
+    "command": "npm i && npm run build:production",
+    "publicDir": "dist",
+    "baseDir": "",
+    "environment": {}
+  }
+}
