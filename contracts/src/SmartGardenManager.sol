@@ -6,7 +6,7 @@ import {ISafeProtocolPlugin} from "safe-protocol/interfaces/Integrations.sol";
 
 import {IModule} from "./interfaces/IModule.sol";
 
-contract SmartGardenProtocolManager is SafeProtocolManager {
+contract SmartGardenManager is SafeProtocolManager {
   constructor(
     address _initialOwner,
     address _registry

@@ -20,13 +20,13 @@ contract DummyModule {
   ////////////////////////////////////////////////////////////////////////////
 
   // address (SafeProtocolManager)
-  address protocolManager;
+  address manager;
 
   // address (Safe address) => DummyConfig
   mapping(address => DummyConfig) public safeConfigs;
 
-  constructor(address _protocolManager) {
-    protocolManager = protocolManager;
+  constructor(address _manager) {
+    manager = _manager;
   }
 
   ////////////////////////////////////////////////////////////////////////////
