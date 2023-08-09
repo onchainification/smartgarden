@@ -4,7 +4,9 @@ pragma solidity ^0.8.20;
 import {ISafe} from "safe-protocol/interfaces/Accounts.sol";
 import {ISafeProtocolManager, SafeRootAccess} from "safe-protocol/interfaces/Manager.sol";
 
-contract DummyModule {
+import {BaseModule, PluginMetadata} from "./BaseModule.sol";
+
+contract DummyModule is BaseModule {
   ////////////////////////////////////////////////////////////////////////////
   // STRUCT
   ////////////////////////////////////////////////////////////////////////////
@@ -25,76 +27,27 @@ contract DummyModule {
   // address (Safe address) => DummyConfig
   mapping(address => DummyConfig) public safeConfigs;
 
-  constructor(address _manager) {
+  constructor(address _manager, PluginMetadata memory _data) BaseModule(_data) {
     manager = _manager;
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  // PUBLIC: VIEW
-  ////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * @notice A funtion that returns name of the plugin
-   * @return name string name of the plugin
-   */
-  function name() external view returns (string memory name) {
-    name = "dummy";
-  }
-
-  /**
-   * @notice A function that returns version of the plugin
-   * @return version string version of the plugin
-   */
-  function version() external view returns (string memory version) {
-    version = "0.0.1";
-  }
-
-  /**
-   * @notice A function that returns information about the type of metadata provider and its location.
-   *         For more information on metadata provider, refer to https://github.com/safe-global/safe-core-protocol-specs/.
-   * @return providerType uint256 Type of metadata provider
-   * @return location bytes
-   */
-  function metadataProvider()
-    external
-    view
-    returns (uint256 providerType, bytes memory location)
-  {
-    providerType = 0;
-    location = abi.encode(0);
-  }
-
-  /**
-   * @notice A function that indicates if the plugin requires root access to a Safe.
-   * @return requiresRootAccess True if root access is required, false otherwise.
-   */
-  function requiresRootAccess()
-    external
-    view
-    returns (bool requiresRootAccess)
-  {
-    requiresRootAccess = true;
   }
 
   ////////////////////////////////////////////////////////////////////////////
   // PUBLIC: Manager - Config
   ////////////////////////////////////////////////////////////////////////////
 
-  function setSafeConfig(address safe, DummyConfig calldata config) external {
-    safeConfigs[safe] = config;
+  function setSafeConfig(address _safe, DummyConfig calldata _config) external {
+    safeConfigs[_safe] = _config;
   }
 
-  /**
-   * @notice Executes a Safe transaction
-   * @param manager Address of the Safe{Core} Protocol Manager.
-   * @param safe Safe account
-   * @param rootAccess Contains the set of actions to be done in the Safe transaction
-   */
+  /// @notice Executes a Safe transaction
+  /// @param _manager Address of the Safe{Core} Protocol Manager.
+  /// @param _safe Safe account
+  /// @param _rootAccess Contains the set of actions to be done in the Safe transaction
   function executeFromPlugin(
-    ISafeProtocolManager manager,
-    ISafe safe,
-    SafeRootAccess calldata rootAccess
+    ISafeProtocolManager _manager,
+    ISafe _safe,
+    SafeRootAccess calldata _rootAccess
   ) external {
-    manager.executeRootAccess(safe, rootAccess);
+    _manager.executeRootAccess(_safe, _rootAccess);
   }
 }
