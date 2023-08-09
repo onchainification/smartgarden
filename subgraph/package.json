@@ -1,0 +1,11 @@
+{
+  "name": "smartgarden",
+  "license": "UNLICENSED",
+  "scripts": {
+    "lfg": "graph codegen && graph build && graph deploy --studio smartgarden"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "*",
+    "@graphprotocol/graph-ts": "*"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "optimism-goerli": {
+    "SmartGardenFactory": {
+      "address": "0x2AFCbBff6592340D1938F6e80B3439781eF516f6",
+      "startBlock": 12997820
+    }
+  }
+}
