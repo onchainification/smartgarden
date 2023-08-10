@@ -1,48 +1,53 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.15;
+pragma solidity ^0.8.20;
 
-contract DummyModule {
+import {ISafe} from "safe-protocol/interfaces/Accounts.sol";
+import {ISafeProtocolManager, SafeRootAccess} from "safe-protocol/interfaces/Manager.sol";
+
+import {BaseModule, PluginMetadata} from "./BaseModule.sol";
+
+contract DummyModule is BaseModule {
+  ////////////////////////////////////////////////////////////////////////////
+  // STRUCT
+  ////////////////////////////////////////////////////////////////////////////
+
+  struct DummyConfig {
+    address vault;
+    uint64 cadenceSec;
+    uint64 lastCall;
+  }
+
   ////////////////////////////////////////////////////////////////////////////
   // STORAGE
   ////////////////////////////////////////////////////////////////////////////
 
-  /// @notice erc-4626 compliance address
-  address public vault;
+  // address (SafeProtocolManager)
+  address manager;
 
-  /// @notice processing cadence in seconds
-  uint256 public cadence;
+  // address (Safe address) => DummyConfig
+  mapping(address => DummyConfig) public safeConfigs;
 
-  ////////////////////////////////////////////////////////////////////////////
-  // EVENTS
-  ////////////////////////////////////////////////////////////////////////////
-
-  event VaultAddressUpdated(address newVaultAddress, address oldVaultAddress);
-  event CadenceUpdated(uint256 newCadence, uint256 oldCadence);
-
-  constructor(address _vault, uint256 _cadence) {
-    vault = _vault;
-    cadence = _cadence;
+  constructor(address _manager, PluginMetadata memory _data) BaseModule(_data) {
+    manager = _manager;
   }
 
   ////////////////////////////////////////////////////////////////////////////
-  // PUBLIC: Owner - Config
+  // PUBLIC: Manager - Config
   ////////////////////////////////////////////////////////////////////////////
 
-  /// @notice Updates the vault erc-4626 address at which rewards will be process
-  /// @param _vaultAddr The new vault adress as target
-  function setVault(address _vaultAddr) external {
-    address oldVaultAddr = vault;
-
-    vault = _vaultAddr;
-    emit VaultAddressUpdated(_vaultAddr, oldVaultAddr);
+  function setSafeConfig(address _safe, DummyConfig calldata _config) external {
+    safeConfigs[_safe] = _config;
   }
 
-  /// @notice Updates the cadenceat which rewards are processed by the keeper
-  /// @param _cadence The new cadence frequency in seconds.
-  function setCadence(uint256 _cadence) external {
-    uint256 oldCadence = cadence;
-
-    cadence = _cadence;
-    emit CadenceUpdated(_cadence, oldCadence);
+  /// @notice Executes a Safe transaction
+  /// @param _manager Address of the Safe{Core} Protocol Manager.
+  /// @param _safe Safe account
+  /// @param _rootAccess Contains the set of actions to be done in the Safe transaction
+  function executeFromPlugin(
+    ISafeProtocolManager _manager,
+    ISafe _safe,
+    SafeRootAccess calldata _rootAccess
+  ) external {
+    _manager.executeRootAccess(_safe, _rootAccess);
   }
 }
