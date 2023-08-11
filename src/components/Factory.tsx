@@ -12,10 +12,15 @@ import { UpdateModuleConfig } from "./Module";
 
 import { ProcessingMessage } from "./HashProcessor";
 
+import { getBalance } from "./GraphQuery";
+
 const NULL_ADDR = "0x0000000000000000000000000000000000000000";
 
 export function Factory() {
   const { address } = useAccount();
+
+  getBalance(address!);
+
   /**
    * defaulting: https://optimistic.etherscan.io/address/0x61ac9315a1ae71633e95fb35601b59180ec8d61d
    */
