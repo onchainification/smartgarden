@@ -2,9 +2,11 @@
 pragma solidity ^0.8.20;
 
 import {ISafe} from "safe-protocol/interfaces/Accounts.sol";
-import {ISafeProtocolManager, SafeRootAccess} from "safe-protocol/interfaces/Manager.sol";
+import {ISafeProtocolManager, SafeTransaction} from "safe-protocol/interfaces/Manager.sol";
 
 import {BaseModule, PluginMetadata} from "./BaseModule.sol";
+
+import {IBasicRewards} from "../interfaces/IReward.sol";
 
 contract DummyModule is BaseModule {
   ////////////////////////////////////////////////////////////////////////////
@@ -24,11 +26,43 @@ contract DummyModule is BaseModule {
   // address (SafeProtocolManager)
   address manager;
 
+  // address (relayer: keeper, gelato, AA)
+  address public relayer;
+
   // address (Safe address) => DummyConfig
   mapping(address => DummyConfig) public safeConfigs;
 
-  constructor(address _manager, PluginMetadata memory _data) BaseModule(_data) {
+  ////////////////////////////////////////////////////////////////////////////
+  // ERRORS
+  ////////////////////////////////////////////////////////////////////////////
+
+  error UntrustedRelayer(address origin);
+
+  error TooSoon(uint256 currentTime, uint256 updateTime, uint256 minDuration);
+
+  ////////////////////////////////////////////////////////////////////////////
+  // MODIFIERS
+  ////////////////////////////////////////////////////////////////////////////
+
+  modifier onlyRelayer() {
+    if (msg.sender != relayer) revert UntrustedRelayer(msg.sender);
+    _;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // EVENTS
+  ////////////////////////////////////////////////////////////////////////////
+
+  /// @dev use for subgraph to display basic info in ui as per `safe` basis
+  event PluginTransactionExec(address safe, uint256 timestamp);
+
+  constructor(
+    address _manager,
+    address _relayer,
+    PluginMetadata memory _data
+  ) BaseModule(_data) {
     manager = _manager;
+    relayer = _relayer;
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -39,15 +73,25 @@ contract DummyModule is BaseModule {
     safeConfigs[_safe] = _config;
   }
 
-  /// @notice Executes a Safe transaction
-  /// @param _manager Address of the Safe{Core} Protocol Manager.
+  /// @notice Executes a Safe transaction. Only executable by trusted relayer
   /// @param _safe Safe account
-  /// @param _rootAccess Contains the set of actions to be done in the Safe transaction
+  /// @param _transaction A struct of type SafeTransaction containing information of about the action(s) to be executed
   function executeFromPlugin(
-    ISafeProtocolManager _manager,
     ISafe _safe,
-    SafeRootAccess calldata _rootAccess
-  ) external {
-    _manager.executeRootAccess(_safe, _rootAccess);
+    SafeTransaction calldata _transaction
+  ) external onlyRelayer {
+    DummyConfig storage config = safeConfigs[address(_safe)];
+
+    uint256 lastCallTimestampCached = config.lastCall;
+    uint256 cadenceCached = config.cadenceSec;
+
+    if ((block.timestamp - lastCallTimestampCached) < cadenceCached) {
+      revert TooSoon(block.timestamp, lastCallTimestampCached, cadenceCached);
+    }
+
+    ISafeProtocolManager(manager).executeTransaction(_safe, _transaction);
+    config.lastCall = uint64(block.timestamp);
+
+    emit PluginTransactionExec(address(_safe), block.timestamp);
   }
 }

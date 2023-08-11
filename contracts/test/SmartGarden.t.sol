@@ -10,7 +10,7 @@ import {Safe} from "safe-contracts/Safe.sol";
 
 import {ISafe} from "safe-protocol/interfaces/Accounts.sol";
 import {SafeProtocolRegistry} from "safe-protocol/SafeProtocolRegistry.sol";
-import {SafeRootAccess, SafeProtocolAction} from "safe-protocol/DataTypes.sol";
+import {SafeTransaction, SafeProtocolAction} from "safe-protocol/DataTypes.sol";
 import {Enum} from "safe-protocol/common/Enum.sol";
 
 import {SmartGardenManager} from "../src/SmartGardenManager.sol";
@@ -31,6 +31,7 @@ contract SmartGardenTest is Test {
   // ecosystem agents
   address owner = address(14);
   address safeOwner = address(3);
+  address relayer = address(5);
 
   // gnosis-safe sc
   SafeProxyFactory safeFactory = new SafeProxyFactory();
@@ -47,11 +48,11 @@ contract SmartGardenTest is Test {
     PluginMetadata({
       name: "dummy",
       version: "v0.0.1",
-      requiresRootAccess: true,
+      requiresRootAccess: false,
       iconUrl: "",
       appUrl: ""
     });
-  DummyModule plugin = new DummyModule(address(manager), data);
+  DummyModule plugin = new DummyModule(address(manager), relayer, data);
 
   function setUp() public {
     vm.prank(owner);
@@ -84,6 +85,9 @@ contract SmartGardenTest is Test {
     );
 
     assertEq(tkn.balanceOf(address(safeProxy)), 12e18);
+
+    // manipulate `block.timestamp`. otherwise locally will be ~1
+    vm.warp(1691763307);
   }
 
   function test_basic_safe_flow() public {
@@ -99,7 +103,7 @@ contract SmartGardenTest is Test {
       cadenceSec: 86400,
       lastCall: 0
     });
-    manager.enablePluginWithConfig(address(plugin), true, config);
+    manager.enablePluginWithConfig(address(plugin), false, config);
 
     (address vault, uint64 cadenceSec, uint64 lastCall) = plugin.safeConfigs(
       address(safeProxy)
@@ -109,19 +113,44 @@ contract SmartGardenTest is Test {
     assertEq(lastCall, 0);
     assertEq(cadenceSec, 86400);
 
-    SafeProtocolAction memory payload = SafeProtocolAction({
+    SafeProtocolAction[] memory transactions = new SafeProtocolAction[](1);
+    transactions[0] = SafeProtocolAction({
       to: payable(address(tkn)),
       value: 0,
       data: abi.encodeWithSelector(IERC20.transfer.selector, address(1), 1e18)
     });
 
-    SafeRootAccess memory rootAccess = SafeRootAccess({
-      action: payload,
+    SafeTransaction memory transaction = SafeTransaction({
+      actions: transactions,
       nonce: 0,
       metadataHash: bytes32(0)
     });
 
-    vm.prank(address(plugin));
-    plugin.executeFromPlugin(manager, ISafe(address(safeProxy)), rootAccess);
+    // abstraction of exec via relayer service
+    vm.prank(address(relayer));
+    plugin.executeFromPlugin(ISafe(address(safeProxy)), transaction);
+
+    (, , uint64 lastCallAfter) = plugin.safeConfigs(address(safeProxy));
+
+    // ensure that ts was writen in storage and greater
+    assertGt(lastCallAfter, lastCall);
+
+    // revert if we try to trigger right after
+    vm.prank(address(relayer));
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        DummyModule.TooSoon.selector,
+        block.timestamp,
+        lastCallAfter,
+        cadenceSec
+      )
+    );
+    plugin.executeFromPlugin(ISafe(address(safeProxy)), transaction);
+
+    // ok to trigger after ts >= cadence
+    skip(1 days);
+
+    vm.prank(address(relayer));
+    plugin.executeFromPlugin(ISafe(address(safeProxy)), transaction);
   }
 }
