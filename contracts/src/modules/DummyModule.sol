@@ -2,11 +2,12 @@
 pragma solidity ^0.8.20;
 
 import {ISafe} from "safe-protocol/interfaces/Accounts.sol";
-import {ISafeProtocolManager, SafeTransaction} from "safe-protocol/interfaces/Manager.sol";
+import {ISafeProtocolManager} from "safe-protocol/interfaces/Manager.sol";
+import {SafeTransaction, SafeProtocolAction} from "safe-protocol/DataTypes.sol";
 
 import {BaseModule, PluginMetadata} from "./BaseModule.sol";
 
-import {IBasicRewards} from "../interfaces/IReward.sol";
+import {IGauge} from "../interfaces/IGauge.sol";
 
 contract DummyModule is BaseModule {
   ////////////////////////////////////////////////////////////////////////////
@@ -54,7 +55,7 @@ contract DummyModule is BaseModule {
   ////////////////////////////////////////////////////////////////////////////
 
   /// @dev use for subgraph to display basic info in ui as per `safe` basis
-  event PluginTransactionExec(address safe, uint256 timestamp);
+  event PluginTransactionExec(address safe, address gauge, uint256 timestamp);
 
   constructor(
     address _manager,
@@ -74,12 +75,8 @@ contract DummyModule is BaseModule {
   }
 
   /// @notice Executes a Safe transaction. Only executable by trusted relayer
-  /// @param _safe Safe account
-  /// @param _transaction A struct of type SafeTransaction containing information of about the action(s) to be executed
-  function executeFromPlugin(
-    ISafe _safe,
-    SafeTransaction calldata _transaction
-  ) external onlyRelayer {
+  /// @param _safe Safe account target address
+  function executeFromPlugin(ISafe _safe) external onlyRelayer {
     DummyConfig storage config = safeConfigs[address(_safe)];
 
     uint256 lastCallTimestampCached = config.lastCall;
@@ -89,9 +86,22 @@ contract DummyModule is BaseModule {
       revert TooSoon(block.timestamp, lastCallTimestampCached, cadenceCached);
     }
 
-    ISafeProtocolManager(manager).executeTransaction(_safe, _transaction);
+    SafeProtocolAction[] memory transactions = new SafeProtocolAction[](1);
+    transactions[0] = SafeProtocolAction({
+      to: payable(config.vault),
+      value: 0,
+      data: abi.encodeWithSelector(IGauge.getReward.selector, address(_safe))
+    });
+
+    SafeTransaction memory transaction = SafeTransaction({
+      actions: transactions,
+      nonce: 0,
+      metadataHash: bytes32(0)
+    });
+
+    ISafeProtocolManager(manager).executeTransaction(_safe, transaction);
     config.lastCall = uint64(block.timestamp);
 
-    emit PluginTransactionExec(address(_safe), block.timestamp);
+    emit PluginTransactionExec(address(_safe), config.vault, block.timestamp);
   }
 }
