@@ -34,8 +34,9 @@ contract SmartGardenTest is Test {
 
   // gnosis-safe sc
   SafeProxyFactory safeFactory = new SafeProxyFactory();
-  Safe safe = new Safe();
   SafeProxy s;
+  Safe safe = new Safe(); // singleton implementation
+  Safe safeProxy; // proxied safe pointer
 
   // safe-protocol sc
   SafeProtocolRegistry registry = new SafeProtocolRegistry(owner);
@@ -72,21 +73,27 @@ contract SmartGardenTest is Test {
     );
     s = safeFactory.createProxyWithNonce(address(safe), initializer, 50);
 
+    safeProxy = Safe(payable(address(s)));
+
     // mint tokens to safe
     tkn = new ERC20PresetFixedSupply(
       "TestToken",
       "TT",
-      1000000000000000,
-      address(safe)
+      12e18,
+      address(safeProxy)
     );
+
+    assertEq(tkn.balanceOf(address(safeProxy)), 12e18);
   }
 
   function test_basic_safe_flow() public {
     // enable "manager"
-    vm.prank(address(safe));
-    safe.enableModule(address(manager));
+    vm.prank(address(safeProxy));
+    safeProxy.enableModule(address(manager));
 
-    vm.prank(address(safe));
+    assertEq(safeProxy.isModuleEnabled(address(manager)), true);
+
+    vm.prank(address(safeProxy));
     IPlugin.DummyConfig memory config = IPlugin.DummyConfig({
       vault: address(2),
       cadenceSec: 86400,
@@ -95,7 +102,7 @@ contract SmartGardenTest is Test {
     manager.enablePluginWithConfig(address(plugin), true, config);
 
     (address vault, uint64 cadenceSec, uint64 lastCall) = plugin.safeConfigs(
-      address(safe)
+      address(safeProxy)
     );
 
     assertEq(vault, address(2));
@@ -105,7 +112,7 @@ contract SmartGardenTest is Test {
     SafeProtocolAction memory payload = SafeProtocolAction({
       to: payable(address(tkn)),
       value: 0,
-      data: abi.encodeWithSelector(IERC20.transfer.selector, address(1), 10e18)
+      data: abi.encodeWithSelector(IERC20.transfer.selector, address(1), 1e18)
     });
 
     SafeRootAccess memory rootAccess = SafeRootAccess({
@@ -115,6 +122,6 @@ contract SmartGardenTest is Test {
     });
 
     vm.prank(address(plugin));
-    plugin.executeFromPlugin(manager, ISafe(address(safe)), rootAccess);
+    plugin.executeFromPlugin(manager, ISafe(address(safeProxy)), rootAccess);
   }
 }
