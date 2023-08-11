@@ -4,11 +4,15 @@ pragma solidity ^0.8.20;
 /* Testing utilities */
 import {Test} from "forge-std/Test.sol";
 
+import {SafeProxyFactory} from "safe-contracts/proxies/SafeProxyFactory.sol";
+import {SafeProxy} from "safe-contracts/proxies/SafeProxy.sol";
 import {Safe} from "safe-contracts/Safe.sol";
+
 import {ISafe} from "safe-protocol/interfaces/Accounts.sol";
 import {SafeProtocolRegistry} from "safe-protocol/SafeProtocolRegistry.sol";
 import {SafeRootAccess, SafeProtocolAction} from "safe-protocol/DataTypes.sol";
 import {Enum} from "safe-protocol/common/Enum.sol";
+
 import {SmartGardenManager} from "../src/SmartGardenManager.sol";
 import {PluginMetadata} from "../src/modules/BaseModule.sol";
 import {DummyModule} from "../src/modules/DummyModule.sol";
@@ -18,15 +22,20 @@ import {ERC20PresetFixedSupply} from "@openzeppelin/contracts/token/ERC20/preset
 
 import {IPlugin} from "../src/interfaces/IPlugin.sol";
 
+// NOTE: safe error codes: https://github.com/safe-global/safe-contracts/blob/main/docs/error_codes.md
+
 contract SmartGardenTest is Test {
   // dummy tokens for payload play
   ERC20PresetFixedSupply tkn;
 
   // ecosystem agents
   address owner = address(14);
+  address safeOwner = address(3);
 
-  // gnosis safe
+  // gnosis-safe sc
+  SafeProxyFactory safeFactory = new SafeProxyFactory();
   Safe safe = new Safe();
+  SafeProxy s;
 
   // safe-protocol sc
   SafeProtocolRegistry registry = new SafeProtocolRegistry(owner);
@@ -46,6 +55,22 @@ contract SmartGardenTest is Test {
   function setUp() public {
     vm.prank(owner);
     registry.addIntegration(address(plugin), Enum.IntegrationType.Plugin);
+
+    address[] memory safeOwners = new address[](1);
+    safeOwners[0] = safeOwner;
+
+    bytes memory initializer = abi.encodeWithSelector(
+      Safe.setup.selector,
+      safeOwners, // owners
+      1, // threshold
+      address(0), // to
+      abi.encode(0), // data
+      address(0), // fallbackHandler
+      address(0), // paymentToken
+      0, // payment
+      payable(address(0)) // paymentReceiver
+    );
+    s = safeFactory.createProxyWithNonce(address(safe), initializer, 50);
 
     // mint tokens to safe
     tkn = new ERC20PresetFixedSupply(
@@ -90,7 +115,6 @@ contract SmartGardenTest is Test {
     });
 
     vm.prank(address(plugin));
-    // error codes: https://github.com/safe-global/safe-contracts/blob/main/docs/error_codes.md
     plugin.executeFromPlugin(manager, ISafe(address(safe)), rootAccess);
   }
 }
