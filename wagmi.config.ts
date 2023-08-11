@@ -27,15 +27,15 @@ export default defineConfig({
      * Generates react hooks from your forge contracts
      * @see https://wagmi.sh/cli/plugins/foundry
      */
-    foundry({
-      deployments: {
-        ModuleFactory: {
-          [chains.optimism.id]: MODULE_FACTORY_ADDRESS,
-          [chains.optimismGoerli.id]: MODULE_FACTORY_ADDRESS,
-          [chains.foundry.id]: MODULE_FACTORY_ADDRESS,
-        },
-      },
-    }),
+    // foundry({
+    //   deployments: {
+    //     ModuleFactory: {
+    //       [chains.optimism.id]: MODULE_FACTORY_ADDRESS,
+    //       [chains.optimismGoerli.id]: MODULE_FACTORY_ADDRESS,
+    //       [chains.foundry.id]: MODULE_FACTORY_ADDRESS,
+    //     },
+    //   },
+    // }),
     /**
      * Generates react hooks from your abis
      * @see https://wagmi.sh/cli/plugins/react
