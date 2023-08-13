@@ -161,7 +161,7 @@ export function SmartGardenManager() {
       </div>
       <div className="pt-2.5">
         <h1>
-          Start your journey in smart garden land by enabling our curanted
+          Start your journey in smart garden land by enabling our curated
           manager🪴⛲️
         </h1>
         <ManagerEnabler addr={address} />
