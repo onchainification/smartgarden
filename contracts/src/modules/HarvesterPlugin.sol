@@ -12,8 +12,8 @@ import {BaseModule, PluginMetadata} from "./BaseModule.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
 import {KeeperCompatibleInterface} from "../interfaces/chainlink/KeeperCompatibleInterface.sol";
 
-/// @title HarvesterPlugin
-/// @notice
+/// @title  HarvesterPlugin
+/// @notice Plugin which allows multiple gnosis safes to have a configuration to trigger harvest upon conditions being meet
 contract HarvesterPlugin is BaseModule, KeeperCompatibleInterface {
   using EnumerableSet for EnumerableSet.AddressSet;
 
