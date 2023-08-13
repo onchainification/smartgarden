@@ -91,7 +91,7 @@ contract HarvesterPlugin is BaseModule, KeeperCompatibleInterface {
   // PUBLIC: Relayer/Keeper
   ////////////////////////////////////////////////////////////////////////////
 
-  /// @notice Called by keeper to send funds to underfunded addresses
+  /// @notice Called by keeper to perform harvest.
   /// @param _performData The abi encoded list of safe addresses to trigger harvest
   function performUpkeep(
     bytes calldata _performData
