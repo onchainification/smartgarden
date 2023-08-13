@@ -52,6 +52,7 @@ contract HarvesterPlugin is BaseModule, KeeperCompatibleInterface {
 
   error UntrustedRelayer(address origin);
   error NotManager(address origin);
+  error NotGovernance(address origin);
 
   error TooSoon(uint256 currentTime, uint256 updateTime, uint256 minDuration);
 
@@ -70,7 +71,7 @@ contract HarvesterPlugin is BaseModule, KeeperCompatibleInterface {
   }
 
   modifier onlyGovernance() {
-    if (!relayers.contains(msg.sender)) revert UntrustedRelayer(msg.sender);
+    if (msg.sender != governance) revert NotGovernance(msg.sender);
     _;
   }
 
