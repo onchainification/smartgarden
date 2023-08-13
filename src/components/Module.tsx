@@ -1,6 +1,6 @@
 import { useContractWrite } from "wagmi";
 
-import { dummyModuleABI } from "../generated";
+import { harvesterPluginABI } from "../generated";
 
 import { ProcessingMessage } from "./HashProcessor";
 
@@ -18,7 +18,7 @@ export function UpdateModuleConfig({
 }) {
   const { data, isLoading, write } = useContractWrite({
     address: addr,
-    abi: dummyModuleABI,
+    abi: harvesterPluginABI,
     functionName: method,
   });
 

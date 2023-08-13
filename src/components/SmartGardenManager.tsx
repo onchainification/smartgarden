@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useAccount, useWaitForTransaction, useContractRead } from "wagmi";
 
 import {
-  useModuleFactoryCreateModule,
-  usePrepareModuleFactoryCreateModule,
+  useSmartGardenManagerEnablePluginWithConfig,
+  usePrepareSmartGardenManagerEnablePluginWithConfig,
   useModuleFactoryDeployedModules,
-  dummyModuleABI,
+  harvesterPluginABI,
 } from "../generated";
+
+import { ManagerEnabler } from "./ManagerEnabler";
 
 import { UpdateModuleConfig } from "./Module";
 
@@ -14,14 +16,16 @@ import { ProcessingMessage } from "./HashProcessor";
 
 const NULL_ADDR = "0x0000000000000000000000000000000000000000";
 
-export function Factory() {
+// https://optimistic.etherscan.io/address/0xa1034Ed2C9eb616d6F7f318614316e64682e7923
+const GAUGE_USDC_DOLA_ADDRESS = "0xa1034Ed2C9eb616d6F7f318614316e64682e7923";
+
+// https://optimistic.etherscan.io/address/0xf249209905ed226966e956c104baf8c766d47706
+const HARVEST_PLUGIN_ADDRESS = "0xf249209905Ed226966E956C104baf8C766d47706";
+
+export function SmartGardenManager() {
   const { address } = useAccount();
-  /**
-   * defaulting: https://optimistic.etherscan.io/address/0x61ac9315a1ae71633e95fb35601b59180ec8d61d
-   */
-  const [vaultAddress, setVaultAddress] = useState(
-    "0x61ac9315a1ae71633e95fb35601b59180ec8d61d",
-  );
+
+  const [vaultAddress, setVaultAddress] = useState(GAUGE_USDC_DOLA_ADDRESS);
 
   /**
    * defaulting: 86400 (1-day)
@@ -29,9 +33,11 @@ export function Factory() {
   const [cadenceTs, setCadenceTs] = useState(86400);
 
   /**
-   * options for feeding the <options> html -> (1d, 3d, 1w)
+   * options for feeding the <options> html -> (10min, 1h, 1d, 3d, 1w)
    */
   const cadenceOptions = [
+    { sec: 600, str: "Once every ten minutes" },
+    { sec: 3600, str: "Once an hour" },
     { sec: 86400, str: "Once a Day" },
     { sec: 259200, str: "Once every Three Day" },
     { sec: 604800, str: "Once a Week" },
@@ -43,13 +49,21 @@ export function Factory() {
   const onCadenceChangeAction = (event: React.ChangeEvent<HTMLSelectElement>) =>
     setCadenceTs(parseInt(event.target.value));
 
-  /* Here we start using the magic hooks from wagmi to write & read in the dummy SC */
+  /* Here we start using the magic hooks from wagmi to write & read in the smart garden mngr */
 
-  const { config } = usePrepareModuleFactoryCreateModule({
-    args: [vaultAddress as `0x${string}`, BigInt(cadenceTs)],
+  const { config } = usePrepareSmartGardenManagerEnablePluginWithConfig({
+    args: [
+      HARVEST_PLUGIN_ADDRESS as `0x${string}`,
+      false,
+      {
+        vault: vaultAddress as `0x${string}`,
+        cadenceSec: BigInt(cadenceTs),
+        lastCall: BigInt(0),
+      },
+    ],
   });
 
-  const { data, write } = useModuleFactoryCreateModule({
+  const { data, write } = useSmartGardenManagerEnablePluginWithConfig({
     ...config,
     onSuccess: () => {
       setVaultAddress("");
@@ -66,7 +80,7 @@ export function Factory() {
   const getModuleCadence = (addr: `0x${string}`) => {
     const { data } = useContractRead({
       address: addr,
-      abi: dummyModuleABI,
+      abi: harvesterPluginABI,
       functionName: "cadence",
       watch: true,
     });
@@ -77,7 +91,7 @@ export function Factory() {
   const getModuleVaultAddress = (addr: `0x${string}`) => {
     const { data } = useContractRead({
       address: addr,
-      abi: dummyModuleABI,
+      abi: harvesterPluginABI,
       functionName: "vault",
       watch: true,
     });
@@ -94,11 +108,11 @@ export function Factory() {
     <div className="flex flex-row justify-between items-center">
       <div className="basis-1/4">
         <h2>
-          Display existing deployed module for msg.sender 👀:
+          Display existing enabled plugins for gnosis safe 👀:
           {moduleAddress != NULL_ADDR ? (
             <span style={{ marginLeft: 10 }}>{moduleAddress}</span>
           ) : (
-            <span style={{ marginLeft: 10 }}>"None had being deployed..."</span>
+            <span style={{ marginLeft: 10 }}>"None had being enabled..."</span>
           )}
         </h2>
         {moduleAddress != NULL_ADDR && (
@@ -145,8 +159,15 @@ export function Factory() {
           </>
         )}
       </div>
+      <div className="pt-2.5">
+        <h1>
+          Start your journey in smart garden land by enabling our curated
+          manager🪴⛲️
+        </h1>
+        <ManagerEnabler addr={address} />
+      </div>
       <div>
-        <h1>Configure your module preferences 🙏</h1>
+        <h1>Configure your plugin preferences 🙏</h1>
         <input
           onChange={(e) => setVaultAddress(e.target.value)}
           value={vaultAddress}
@@ -165,7 +186,7 @@ export function Factory() {
           className="inline-block rounded bg-primary px-6 pb-2 pt-2.5 text-xs"
           onClick={() => write?.()}
         >
-          Deploy module, lets go!! 🚀
+          Enable plugin, lets go!! 🚀
         </button>
       </div>
       {isLoading && <ProcessingMessage hash={data?.hash} />}
