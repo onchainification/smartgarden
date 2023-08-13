@@ -19,8 +19,8 @@ const NULL_ADDR = "0x0000000000000000000000000000000000000000";
 // https://optimistic.etherscan.io/address/0xa1034Ed2C9eb616d6F7f318614316e64682e7923
 const GAUGE_USDC_DOLA_ADDRESS = "0xa1034Ed2C9eb616d6F7f318614316e64682e7923";
 
-// https://optimistic.etherscan.io/address/
-const HARVEST_PLUGIN_ADDRESS = "";
+// https://optimistic.etherscan.io/address/0xf249209905ed226966e956c104baf8c766d47706
+const HARVEST_PLUGIN_ADDRESS = "0xf249209905Ed226966E956C104baf8C766d47706";
 
 export function SmartGardenManager() {
   const { address } = useAccount();
