@@ -38,4 +38,4 @@ Note that this needs to have set `graph auth --studio` if you really want to dep
 - [`SafeProtocolRegistry`](https://optimistic.etherscan.io/address/0xe0142a586ac163ddf8e4ab2af4607cd0f8943710)
 - [`SmartGardenManager`](https://optimistic.etherscan.io/address/0xfd20c63554a9916816dc5e5df596a0333185f263)
 - [`HarvesterPlugin`](https://optimistic.etherscan.io/address/0xf249209905ed226966e956c104baf8c766d47706)
-- [`Safe`][https://optimistic.etherscan.io/address/0xF55aB9D6eaaB0614073cC1da5C29b093F6e3Aebc]
+- [`Safe`](https://optimistic.etherscan.io/address/0xF55aB9D6eaaB0614073cC1da5C29b093F6e3Aebc)
