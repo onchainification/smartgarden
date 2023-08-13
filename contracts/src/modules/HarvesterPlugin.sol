@@ -34,8 +34,11 @@ contract HarvesterPlugin is BaseModule, KeeperCompatibleInterface {
   // address (SafeProtocolManager)
   address manager;
 
-  // address (relayer: cl keeper, gelato, AA)
-  address public relayer;
+  // address: entity controlling with relayer are allow or not to call `performUpkeep`
+  address governance;
+
+  /// @notice Address of the relayer allow to call `performUpkeep`
+  EnumerableSet.AddressSet internal relayers;
 
   /// @notice Address of the safes with plugin enabled
   EnumerableSet.AddressSet internal safes;
@@ -48,6 +51,7 @@ contract HarvesterPlugin is BaseModule, KeeperCompatibleInterface {
   ////////////////////////////////////////////////////////////////////////////
 
   error UntrustedRelayer(address origin);
+  error NotManager(address origin);
 
   error TooSoon(uint256 currentTime, uint256 updateTime, uint256 minDuration);
 
@@ -56,7 +60,17 @@ contract HarvesterPlugin is BaseModule, KeeperCompatibleInterface {
   ////////////////////////////////////////////////////////////////////////////
 
   modifier onlyRelayer() {
-    if (msg.sender != relayer) revert UntrustedRelayer(msg.sender);
+    if (!relayers.contains(msg.sender)) revert UntrustedRelayer(msg.sender);
+    _;
+  }
+
+  modifier onlyManager() {
+    if (msg.sender != manager) revert NotManager(msg.sender);
+    _;
+  }
+
+  modifier onlyGovernance() {
+    if (!relayers.contains(msg.sender)) revert UntrustedRelayer(msg.sender);
     _;
   }
 
@@ -67,20 +81,50 @@ contract HarvesterPlugin is BaseModule, KeeperCompatibleInterface {
   /// @dev use for subgraph to display basic info in ui as per `safe` basis
   event PluginTransactionExec(address safe, address gauge, uint256 timestamp);
 
+  event RelayerAdded(address indexed relayer, uint256 timestamp);
+  event RelayerRemoved(address indexed relayer, uint256 timestamp);
+
   constructor(
     address _manager,
     address _relayer,
+    address _governance,
     PluginMetadata memory _data
   ) BaseModule(_data) {
     manager = _manager;
-    relayer = _relayer;
+    relayers.add(_relayer);
+    governance = _governance;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // PUBLIC: Gov - Config
+  ////////////////////////////////////////////////////////////////////////////
+
+  /// @dev Adds a relayer to the Set of allowed addresses.
+  /// @notice Only callable by governance.
+  /// @param _relayer Address which will have rights to call `performUpkeep`.
+  function addRelayer(address _relayer) external onlyGovernance {
+    require(_relayer != address(0), "zero-address!");
+    require(relayers.add(_relayer), "not-add-in-set!");
+    emit RelayerAdded(_relayer, block.timestamp);
+  }
+
+  /// @dev Removes a relayer to the Set of allowed addresses.
+  /// @notice Only callable by governance.
+  /// @param _relayer Address which will not have rights to call `performUpkeep`.
+  function removeRelayer(address _relayer) external onlyGovernance {
+    require(_relayer != address(0), "zero-address!");
+    require(relayers.remove(_relayer), "not-remove-in-set!");
+    emit RelayerRemoved(_relayer, block.timestamp);
   }
 
   ////////////////////////////////////////////////////////////////////////////
   // PUBLIC: Manager - Config
   ////////////////////////////////////////////////////////////////////////////
 
-  function setSafeConfig(address _safe, DummyConfig calldata _config) external {
+  function setSafeConfig(
+    address _safe,
+    DummyConfig calldata _config
+  ) external onlyManager {
     safeConfigs[_safe] = _config;
 
     // NOTE: this is a temp solution

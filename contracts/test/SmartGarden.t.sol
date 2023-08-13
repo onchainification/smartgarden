@@ -38,6 +38,7 @@ contract SmartGardenTest is Test {
   address safeOwner = address(3);
   address relayer = address(5);
   address rewardsDepositor = address(15);
+  address pluginGov = address(500);
 
   // gnosis-safe sc
   SafeProxyFactory safeFactory = new SafeProxyFactory();
@@ -61,7 +62,8 @@ contract SmartGardenTest is Test {
       iconUrl: "",
       appUrl: ""
     });
-  HarvesterPlugin plugin = new HarvesterPlugin(address(manager), relayer, data);
+  HarvesterPlugin plugin =
+    new HarvesterPlugin(address(manager), relayer, pluginGov, data);
 
   function setUp() public {
     vm.prank(owner);
