@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 import {ISafe} from "safe-protocol/interfaces/Accounts.sol";
 import {ISafeProtocolManager} from "safe-protocol/interfaces/Manager.sol";
 import {SafeTransaction, SafeProtocolAction} from "safe-protocol/DataTypes.sol";
@@ -8,8 +10,13 @@ import {SafeTransaction, SafeProtocolAction} from "safe-protocol/DataTypes.sol";
 import {BaseModule, PluginMetadata} from "./BaseModule.sol";
 
 import {IGauge} from "../interfaces/IGauge.sol";
+import {KeeperCompatibleInterface} from "../interfaces/chainlink/KeeperCompatibleInterface.sol";
 
-contract DummyModule is BaseModule {
+/// @title HarvesterPlugin
+/// @notice
+contract HarvesterPlugin is BaseModule, KeeperCompatibleInterface {
+  using EnumerableSet for EnumerableSet.AddressSet;
+
   ////////////////////////////////////////////////////////////////////////////
   // STRUCT
   ////////////////////////////////////////////////////////////////////////////
@@ -27,8 +34,11 @@ contract DummyModule is BaseModule {
   // address (SafeProtocolManager)
   address manager;
 
-  // address (relayer: keeper, gelato, AA)
+  // address (relayer: cl keeper, gelato, AA)
   address public relayer;
+
+  /// @notice Address of the safes with plugin enabled
+  EnumerableSet.AddressSet internal safes;
 
   // address (Safe address) => DummyConfig
   mapping(address => DummyConfig) public safeConfigs;
@@ -72,11 +82,92 @@ contract DummyModule is BaseModule {
 
   function setSafeConfig(address _safe, DummyConfig calldata _config) external {
     safeConfigs[_safe] = _config;
+
+    // NOTE: this is a temp solution
+    if (!safes.contains(_safe)) safes.add(_safe);
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // PUBLIC: Relayer/Keeper
+  ////////////////////////////////////////////////////////////////////////////
+
+  /// @notice Called by keeper to send funds to underfunded addresses
+  /// @param _performData The abi encoded list of safe addresses to trigger harvest
+  function performUpkeep(
+    bytes calldata _performData
+  ) external override onlyRelayer {
+    address[] memory needsHarvest = abi.decode(_performData, (address[]));
+
+    for (uint256 i; i < needsHarvest.length; ) {
+      _executeFromPlugin(ISafe(needsHarvest[i]));
+      unchecked {
+        ++i;
+      }
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // PUBLIC VIEW
+  ////////////////////////////////////////////////////////////////////////////
+
+  /// @notice Checks whether an upkeep is to be performed.
+  /// @return upkeepNeeded_ A boolean indicating whether an upkeep is to be performed.
+  /// @return performData_ The calldata to be passed to the upkeep function.
+  function checkUpkeep(
+    bytes calldata
+  )
+    external
+    view
+    override
+    returns (bool upkeepNeeded_, bytes memory performData_)
+  {
+    address[] memory safesReqTrigger = _getTriggableSafes();
+    upkeepNeeded_ = safesReqTrigger.length > 0;
+    performData_ = abi.encode(safesReqTrigger);
+  }
+
+  /// @notice All safe addresses
+  function getSafes() public view returns (address[] memory) {
+    return safes.values();
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // INTERNAL
+  ////////////////////////////////////////////////////////////////////////////
+
+  /// @notice Gets a list of safe addresses that keepers can trigger
+  /// @return list of safe addresses that plugin can trigger harvest action
+  function _getTriggableSafes() internal view returns (address[] memory) {
+    uint256 cachedLen = safes.length();
+    address[] memory needsHarvest = new address[](cachedLen);
+    uint256 harvestCount;
+
+    if (cachedLen > 0) {
+      for (uint256 i; i < cachedLen; ) {
+        address safeAddr = safes.at(i);
+        DummyConfig memory config = safeConfigs[safeAddr];
+        if ((block.timestamp - config.lastCall) >= config.cadenceSec) {
+          needsHarvest[harvestCount] = safeAddr;
+          harvestCount++;
+        }
+        unchecked {
+          ++i;
+        }
+      }
+
+      if (harvestCount != cachedLen) {
+        assembly {
+          mstore(needsHarvest, harvestCount)
+        }
+      }
+    }
+
+    return needsHarvest;
   }
 
   /// @notice Executes a Safe transaction. Only executable by trusted relayer
   /// @param _safe Safe account target address
-  function executeFromPlugin(ISafe _safe) external onlyRelayer {
+  function _executeFromPlugin(ISafe _safe) internal {
     DummyConfig storage config = safeConfigs[address(_safe)];
 
     uint256 lastCallTimestampCached = config.lastCall;
@@ -95,7 +186,8 @@ contract DummyModule is BaseModule {
 
     SafeTransaction memory transaction = SafeTransaction({
       actions: transactions,
-      nonce: 0,
+      // NOTE: find uniqueness via `block.number`
+      nonce: uint256(keccak256(abi.encode(address(_safe), block.number))),
       metadataHash: bytes32(0)
     });
 
