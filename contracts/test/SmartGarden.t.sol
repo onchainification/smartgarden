@@ -17,7 +17,7 @@ import {MockGauge} from "../src/test/MockGauge.sol";
 
 import {SmartGardenManager} from "../src/SmartGardenManager.sol";
 import {PluginMetadata} from "../src/modules/BaseModule.sol";
-import {DummyModule} from "../src/modules/DummyModule.sol";
+import {HarvesterPlugin} from "../src/modules/HarvesterPlugin.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ERC20PresetFixedSupply} from "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetFixedSupply.sol";
@@ -38,6 +38,7 @@ contract SmartGardenTest is Test {
   address safeOwner = address(3);
   address relayer = address(5);
   address rewardsDepositor = address(15);
+  address pluginGov = address(500);
 
   // gnosis-safe sc
   SafeProxyFactory safeFactory = new SafeProxyFactory();
@@ -61,7 +62,8 @@ contract SmartGardenTest is Test {
       iconUrl: "",
       appUrl: ""
     });
-  DummyModule plugin = new DummyModule(address(manager), relayer, data);
+  HarvesterPlugin plugin =
+    new HarvesterPlugin(address(manager), relayer, pluginGov, data);
 
   function setUp() public {
     vm.prank(owner);
@@ -143,16 +145,21 @@ contract SmartGardenTest is Test {
     (address vault, uint64 cadenceSec, uint64 lastCall) = plugin.safeConfigs(
       address(safeProxy)
     );
+    address[] memory safes = plugin.getSafes();
 
     assertEq(vault, address(gauge));
     assertEq(lastCall, 0);
     assertEq(cadenceSec, 86400);
+    assertEq(safes[0], address(safeProxy));
 
     uint256 rewardsBalBefore = rewardsToken.balanceOf(address(safeProxy));
 
     // abstraction of exec via relayer service
+    (bool upkeepNeeded, bytes memory performData) = plugin.checkUpkeep(
+      new bytes(0)
+    );
     vm.prank(address(relayer));
-    plugin.executeFromPlugin(ISafe(address(safeProxy)));
+    plugin.performUpkeep(performData);
 
     // ensure rewards in safe increased
     assertGt(rewardsToken.balanceOf(address(safeProxy)), rewardsBalBefore);
@@ -162,22 +169,28 @@ contract SmartGardenTest is Test {
     // ensure that ts was writen in storage and greater
     assertGt(lastCallAfter, lastCall);
 
+    (upkeepNeeded, ) = plugin.checkUpkeep(new bytes(0));
+
+    assertFalse(upkeepNeeded);
+
     // revert if we try to trigger right after
     vm.prank(address(relayer));
     vm.expectRevert(
       abi.encodeWithSelector(
-        DummyModule.TooSoon.selector,
+        HarvesterPlugin.TooSoon.selector,
         block.timestamp,
         lastCallAfter,
         cadenceSec
       )
     );
-    plugin.executeFromPlugin(ISafe(address(safeProxy)));
+    plugin.performUpkeep(performData);
 
     // ok to trigger after ts >= cadence
     skip(1 days);
 
+    (upkeepNeeded, performData) = plugin.checkUpkeep(new bytes(0));
+
     vm.prank(address(relayer));
-    plugin.executeFromPlugin(ISafe(address(safeProxy)));
+    plugin.performUpkeep(performData);
   }
 }
