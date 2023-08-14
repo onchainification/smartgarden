@@ -39,3 +39,7 @@ Note that this needs to have set `graph auth --studio` if you really want to dep
 - [`SmartGardenManager`](https://optimistic.etherscan.io/address/0xfd20c63554a9916816dc5e5df596a0333185f263)
 - [`HarvesterPlugin`](https://optimistic.etherscan.io/address/0xf249209905ed226966e956c104baf8c766d47706)
 - [`Safe`](https://optimistic.etherscan.io/address/0xF55aB9D6eaaB0614073cC1da5C29b093F6e3Aebc)
+
+### Chainlink
+
+- [`SmartGardenHarvesterPlugin`](https://automation.chain.link/optimism/15275435444678090841310445038221187480372252783087795255404194648563901208280)
