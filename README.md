@@ -2,6 +2,10 @@
 
 ![204610239-organic-hydroponic-farm-with-rows-of-healthy-plants-and-sustainable-practices-ai-generated](https://github.com/onchainification/smartgarden/assets/2835259/479b4572-0df7-4123-9891-8fb11d5b7fe3)
 
+## Demo Video
+
+See our showcase page from the ETHGlobal SuperHack hackathon: https://ethglobal.com/showcase/smartgarden-2v74d
+
 ## Tech Stack
 
 We used the [Optimism Starter repository](https://github.com/ethereum-optimism/optimism-starter) as a boilerplate:
