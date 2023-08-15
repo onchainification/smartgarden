@@ -2,8 +2,9 @@ import { defineConfig } from "@wagmi/cli";
 import { foundry, react } from "@wagmi/cli/plugins";
 import * as chains from "wagmi/chains";
 
-// https://goerli-optimism.etherscan.io/address/0x2AFCbBff6592340D1938F6e80B3439781eF516f6#code
-const MODULE_FACTORY_ADDRESS = "0x2AFCbBff6592340D1938F6e80B3439781eF516f6";
+// https://optimistic.etherscan.io/address/0xfd20c63554a9916816dc5e5df596a0333185f263#code
+const SMART_GARDEN_MANAGER_ADDRESS =
+  "0xfD20C63554A9916816dC5e5Df596A0333185F263";
 
 /**
  * Wagmi cli will automatically generate react hooks from your forge contracts
@@ -27,15 +28,15 @@ export default defineConfig({
      * Generates react hooks from your forge contracts
      * @see https://wagmi.sh/cli/plugins/foundry
      */
-    // foundry({
-    //   deployments: {
-    //     ModuleFactory: {
-    //       [chains.optimism.id]: MODULE_FACTORY_ADDRESS,
-    //       [chains.optimismGoerli.id]: MODULE_FACTORY_ADDRESS,
-    //       [chains.foundry.id]: MODULE_FACTORY_ADDRESS,
-    //     },
-    //   },
-    // }),
+    foundry({
+      deployments: {
+        SmartGardenManager: {
+          [chains.optimism.id]: SMART_GARDEN_MANAGER_ADDRESS,
+          [chains.optimismGoerli.id]: SMART_GARDEN_MANAGER_ADDRESS,
+          [chains.foundry.id]: SMART_GARDEN_MANAGER_ADDRESS,
+        },
+      },
+    }),
     /**
      * Generates react hooks from your abis
      * @see https://wagmi.sh/cli/plugins/react
