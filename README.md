@@ -2,6 +2,10 @@
 
 ![204610239-organic-hydroponic-farm-with-rows-of-healthy-plants-and-sustainable-practices-ai-generated](https://github.com/onchainification/smartgarden/assets/2835259/479b4572-0df7-4123-9891-8fb11d5b7fe3)
 
+## Demo Video
+
+See our showcase page from the ETHGlobal SuperHack hackathon: https://ethglobal.com/showcase/smartgarden-2v74d
+
 ## Tech Stack
 
 We used the [Optimism Starter repository](https://github.com/ethereum-optimism/optimism-starter) as a boilerplate:
@@ -30,3 +34,16 @@ npm i && npm run lfg
 ```
 
 Note that this needs to have set `graph auth --studio` if you really want to deploy the subgraph. Otherwise, you can test compilability via `graph codegen && graph build`.
+
+## Deployments
+
+### Optimism
+
+- [`SafeProtocolRegistry`](https://optimistic.etherscan.io/address/0xe0142a586ac163ddf8e4ab2af4607cd0f8943710)
+- [`SmartGardenManager`](https://optimistic.etherscan.io/address/0xfd20c63554a9916816dc5e5df596a0333185f263)
+- [`HarvesterPlugin`](https://optimistic.etherscan.io/address/0xf249209905ed226966e956c104baf8c766d47706)
+- [`Safe`](https://optimistic.etherscan.io/address/0xF55aB9D6eaaB0614073cC1da5C29b093F6e3Aebc)
+
+### Chainlink
+
+- [`SmartGardenHarvesterPlugin`](https://automation.chain.link/optimism/15275435444678090841310445038221187480372252783087795255404194648563901208280)

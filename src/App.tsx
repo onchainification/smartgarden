@@ -2,7 +2,7 @@ import "../styles/globals.css";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 
-import { Factory } from "./components";
+import { SmartGardenManager } from "./components";
 
 export function App() {
   /**
@@ -13,7 +13,7 @@ export function App() {
 
   return (
     <>
-      <h1>SmartGarden Factory</h1>
+      <h1>SmartGarden</h1>
 
       {/** @see https://www.rainbowkit.com/docs/connect-button */}
       <ConnectButton />
@@ -21,7 +21,7 @@ export function App() {
       {isConnected && (
         <>
           <hr />
-          <Factory />
+          <SmartGardenManager />
           <hr />
         </>
       )}
