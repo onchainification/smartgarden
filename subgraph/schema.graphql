@@ -1,4 +1,0 @@
-type GaugePosition @entity {
-  id: Bytes! # address
-  balance: BigInt! # uint256
-}
