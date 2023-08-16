@@ -1,4 +1,4 @@
-// credits: https://github.com/LlamaPay/interface/blob/main/queries/useGnosisBatch.tsx 🧠
+// source: https://github.com/LlamaPay/interface/blob/main/queries/useGnosisBatch.tsx 🧠
 import SafeAppsSDK from "@gnosis.pm/safe-apps-sdk/dist/src/sdk";
 import { useMutation } from "@tanstack/react-query";
 
