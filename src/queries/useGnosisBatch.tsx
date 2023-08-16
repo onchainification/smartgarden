@@ -31,6 +31,7 @@ async function batchCall({ sdk, calls }: IGnosisBatch) {
         });
       });
 
+      // docs ref: https://github.com/safe-global/safe-apps-sdk/tree/main/packages/safe-apps-sdk#sending-txs
       await sdk.txs.send({ txs: transactions });
     }
   } catch (error: any) {
