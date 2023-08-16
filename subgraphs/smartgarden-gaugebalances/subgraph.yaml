@@ -1,0 +1,45 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: VelodromeVoter
+    network: optimism
+    source:
+      address: "0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C"
+      abi: VelodromeVoter
+      startBlock: 105896851
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities: []
+      abis:
+        - name: VelodromeVoter
+          file: ./abis/VelodromeVoter.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: GaugeCreated(indexed address,indexed address,indexed address,address,address,address,address,address)
+          handler: handleGaugeCreated
+      file: ./src/velodrome-voter.ts
+templates:
+  - kind: ethereum/contract
+    name: Gauge
+    network: optimism
+    source:
+      abi: Gauge
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/gauge.ts
+      entities: []
+      abis:
+        - name: Gauge
+          file: ./abis/Gauge.json
+      eventHandlers:
+        - event: Deposit(indexed address,indexed address,uint256)
+          handler: handleDeposit
+        - event: Withdraw(indexed address,uint256)
+          handler: handleWithdraw
