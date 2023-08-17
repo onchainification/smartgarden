@@ -1,8 +1,8 @@
 {
   "optimism": {
-    "VelodromeVoter": {
-      "address": "0x09236cfF45047DBee6B921e00704bed6D6B8Cf7e",
-      "startBlock": 10078745
+    "VelodromeVoterV2": {
+      "address": "0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C",
+      "startBlock": 105896851
     }
   }
 }
