@@ -1,6 +1,9 @@
 import { BigInt, Bytes } from "@graphprotocol/graph-ts";
+import { ERC20 } from "../generated/VelodromeVoterV2/ERC20";
+import { GaugeCreated } from "../generated/VelodromeVoterV2/VelodromeVoterV2";
+import { Gauge, GaugePosition, User } from "../generated/schema";
+import { Gauge as GaugeTemplate } from "../generated/templates";
 import { Deposit, Withdraw } from "../generated/templates/Gauge/Gauge";
-import { GaugePosition, User } from "../generated/schema";
 
 export function getUser(address: Bytes): User {
   let user = User.load(address);
@@ -9,6 +12,18 @@ export function getUser(address: Bytes): User {
     user.save();
   }
   return user;
+}
+
+export function handleGaugeCreated(event: GaugeCreated): void {
+  let gauge = new Gauge(event.params.gauge);
+  gauge.protocol = "Velodrome";
+  gauge.pool = event.params.pool;
+  let erc20 = ERC20.bind(event.params.pool);
+  gauge.pool_name = erc20.name();
+  gauge.save();
+
+  // also start indexing this new gauge contract
+  GaugeTemplate.create(event.params.gauge);
 }
 
 export function handleDeposit(event: Deposit): void {
