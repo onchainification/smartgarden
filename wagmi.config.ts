@@ -6,6 +6,9 @@ import * as chains from "wagmi/chains";
 const SMART_GARDEN_MANAGER_ADDRESS =
   "0xfD20C63554A9916816dC5e5Df596A0333185F263";
 
+// https://optimistic.etherscan.io/address/0xf249209905ed226966e956c104baf8c766d47706
+const HARVEST_PLUGIN_ADDRESS = "0xf249209905Ed226966E956C104baf8C766d47706";
+
 /**
  * Wagmi cli will automatically generate react hooks from your forge contracts
  * @see https://wagmi.sh/cli/getting-started
@@ -34,6 +37,11 @@ export default defineConfig({
           [chains.optimism.id]: SMART_GARDEN_MANAGER_ADDRESS,
           [chains.optimismGoerli.id]: SMART_GARDEN_MANAGER_ADDRESS,
           [chains.foundry.id]: SMART_GARDEN_MANAGER_ADDRESS,
+        },
+        HarvesterPlugin: {
+          [chains.optimism.id]: HARVEST_PLUGIN_ADDRESS,
+          [chains.optimismGoerli.id]: HARVEST_PLUGIN_ADDRESS,
+          [chains.foundry.id]: HARVEST_PLUGIN_ADDRESS,
         },
       },
     }),

@@ -1,29 +1,24 @@
 import { useState } from "react";
-import { useAccount, useWaitForTransaction, useContractRead } from "wagmi";
+import { useAccount, useNetwork } from "wagmi";
 
 import {
-  useSmartGardenManagerEnablePluginWithConfig,
-  usePrepareSmartGardenManagerEnablePluginWithConfig,
-  useModuleFactoryDeployedModules,
-  harvesterPluginABI,
+  useSmartGardenManagerGetPluginsPaginated,
+  useHarvesterPluginSafeConfigs,
 } from "../generated";
 
+import { EnablePlugin } from "./EnablePlugin";
 import { ManagerEnabler } from "./ManagerEnabler";
 
 import { UpdateModuleConfig } from "./Module";
 
-import { ProcessingMessage } from "./HashProcessor";
-
-const NULL_ADDR = "0x0000000000000000000000000000000000000000";
-
 // https://optimistic.etherscan.io/address/0xa1034Ed2C9eb616d6F7f318614316e64682e7923
 const GAUGE_USDC_DOLA_ADDRESS = "0xa1034Ed2C9eb616d6F7f318614316e64682e7923";
 
-// https://optimistic.etherscan.io/address/0xf249209905ed226966e956c104baf8c766d47706
-const HARVEST_PLUGIN_ADDRESS = "0xf249209905Ed226966E956C104baf8C766d47706";
-
 export function SmartGardenManager() {
   const { address } = useAccount();
+
+  const { chain } = useNetwork();
+  const etherscan = chain?.blockExplorers?.etherscan;
 
   const [vaultAddress, setVaultAddress] = useState(GAUGE_USDC_DOLA_ADDRESS);
 
@@ -49,93 +44,63 @@ export function SmartGardenManager() {
   const onCadenceChangeAction = (event: React.ChangeEvent<HTMLSelectElement>) =>
     setCadenceTs(parseInt(event.target.value));
 
-  /* Here we start using the magic hooks from wagmi to write & read in the smart garden mngr */
-
-  const { config } = usePrepareSmartGardenManagerEnablePluginWithConfig({
-    args: [
-      HARVEST_PLUGIN_ADDRESS as `0x${string}`,
-      false,
-      {
-        vault: vaultAddress as `0x${string}`,
-        cadenceSec: BigInt(cadenceTs),
-        lastCall: BigInt(0),
-      },
-    ],
-  });
-
-  const { data, write } = useSmartGardenManagerEnablePluginWithConfig({
-    ...config,
-    onSuccess: () => {
-      setVaultAddress("");
-      setCadenceTs(86400);
-    },
-  });
-
-  const { refetch, data: moduleAddress } = useModuleFactoryDeployedModules({
-    args: [address!],
+  const { data: pluginList } = useSmartGardenManagerGetPluginsPaginated({
+    args: ["0x0000000000000000000000000000000000000001", BigInt(5), address!],
   });
 
   // Module section: read config and allow update them
 
-  const getModuleCadence = (addr: `0x${string}`) => {
-    const { data } = useContractRead({
-      address: addr,
-      abi: harvesterPluginABI,
-      functionName: "cadence",
-      watch: true,
+  const getSafeConfig = () => {
+    const { data: config } = useHarvesterPluginSafeConfigs({
+      args: [address!],
     });
 
-    return data?.toString();
+    console.log([config?.[0], config?.[1]]);
+
+    return [config?.[0], config?.[1]];
   };
-
-  const getModuleVaultAddress = (addr: `0x${string}`) => {
-    const { data } = useContractRead({
-      address: addr,
-      abi: harvesterPluginABI,
-      functionName: "vault",
-      watch: true,
-    });
-
-    return data?.toString();
-  };
-
-  const { isLoading } = useWaitForTransaction({
-    hash: data?.hash,
-    onSuccess: () => refetch(),
-  });
 
   return (
     <div className="flex flex-row justify-between items-center">
       <div className="basis-1/4">
         <h2>
           Display existing enabled plugins for gnosis safe 👀:
-          {moduleAddress != NULL_ADDR ? (
-            <span style={{ marginLeft: 10 }}>{moduleAddress}</span>
+          {pluginList?.length > 0 ? (
+            <span style={{ marginLeft: 10 }}>
+              <a
+                href={`${etherscan.url}/address/${pluginList?.[0][0]}`}
+                target="_blank"
+              >
+                {pluginList?.[0][0]}
+              </a>
+            </span>
           ) : (
             <span style={{ marginLeft: 10 }}>"None had being enabled..."</span>
           )}
         </h2>
-        {moduleAddress != NULL_ADDR && (
+        {pluginList?.length > 0 && (
           <>
             <h3>Current module config:</h3>
             <div>
-              <h5>Vault ERC-4626: {getModuleVaultAddress(moduleAddress)}</h5>
+              <h5>Gauge address: {getSafeConfig()[0]}</h5>
               <input
                 onChange={(e) => setVaultAddress(e.target.value)}
                 value={vaultAddress}
                 style={{ marginRight: 10, width: 320 }}
               />
+              {/*
               <UpdateModuleConfig
                 addr={moduleAddress}
                 method={"setVault"}
                 btnTxt={"Update Vault address"}
                 newVal={vaultAddress as `0x${string}`}
               />
+              */}
             </div>
             <div>
               <h5>
                 Cadence:
-                {getModuleCadence(moduleAddress)}
+                {getSafeConfig()[1]?.toLocaleString()}
               </h5>
               <select
                 onChange={onCadenceChangeAction}
@@ -149,12 +114,14 @@ export function SmartGardenManager() {
                   );
                 })}
               </select>
+              {/*
               <UpdateModuleConfig
                 addr={moduleAddress}
                 method={"setCadence"}
                 btnTxt={"Update Cadence"}
                 newVal={BigInt(cadenceTs)}
               />
+              */}
             </div>
           </>
         )}
@@ -182,14 +149,11 @@ export function SmartGardenManager() {
             );
           })}
         </select>
-        <button
-          className="inline-block rounded bg-primary px-6 pb-2 pt-2.5 text-xs"
-          onClick={() => write?.()}
-        >
-          Enable plugin, lets go!! 🚀
-        </button>
+        <EnablePlugin
+          vaultAddress={vaultAddress as `0x${string}`}
+          cadenceTs={cadenceTs}
+        />
       </div>
-      {isLoading && <ProcessingMessage hash={data?.hash} />}
     </div>
   );
 }
