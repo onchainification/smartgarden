@@ -7,6 +7,7 @@ import {
 } from "../generated";
 
 import { EnablePlugin } from "./EnablePlugin";
+import { DisablePlugin } from "./DisablePlugin";
 import { ManagerEnabler } from "./ManagerEnabler";
 
 import { UpdateModuleConfig } from "./Module";
@@ -66,14 +67,15 @@ export function SmartGardenManager() {
         <h2>
           Display existing enabled plugins for gnosis safe 👀:
           {pluginList?.length > 0 ? (
-            <span style={{ marginLeft: 10 }}>
+            <div className="flex flex-row justify-between items-center">
               <a
                 href={`${etherscan.url}/address/${pluginList?.[0][0]}`}
                 target="_blank"
               >
                 {pluginList?.[0][0]}
               </a>
-            </span>
+              <DisablePlugin />
+            </div>
           ) : (
             <span style={{ marginLeft: 10 }}>"None had being enabled..."</span>
           )}
