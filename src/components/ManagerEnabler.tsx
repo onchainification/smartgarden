@@ -1,3 +1,5 @@
+import "../../styles/button.css";
+
 import { encodeFunctionData } from "viem";
 
 import useGnosisBatch from "../queries/useGnosisBatch";
@@ -21,8 +23,12 @@ export function ManagerEnabler({ addr }: { addr?: `0x${string}` }) {
   };
 
   return (
-    <div>
-      <button style={{ marginLeft: 20 }} onClick={handleClick}>
+    <div style={{ width: "700px" }}>
+      <h3>
+        Start your journey in smart garden land by enabling our curated
+        manager🪴⛲️
+      </h3>
+      <button className="button" onClick={handleClick}>
         Enable Smart Garden Manager in your safe!
       </button>
     </div>

@@ -1,3 +1,5 @@
+import "../../styles/button.css";
+
 import { encodeFunctionData } from "viem";
 
 import useGnosisBatch from "../queries/useGnosisBatch";
@@ -31,7 +33,7 @@ export function DisablePlugin() {
 
   return (
     <div>
-      <button style={{ marginLeft: 20 }} onClick={handleClick}>
+      <button className="button" onClick={handleClick}>
         Disable plugin!! 👋
       </button>
     </div>
