@@ -1,11 +1,9 @@
 [submodule "contracts/lib/forge-std"]
 	path = contracts/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
-	branch = chore/bump-to-v1.6.0
 [submodule "contracts/lib/safe-contracts"]
 	path = contracts/lib/safe-contracts
 	url = https://github.com/safe-global/safe-contracts
-	branch = release-branch/v1.4.1
 [submodule "contracts/lib/safe-protocol"]
 	path = contracts/lib/safe-protocol
 	url = https://github.com/5afe/safe-core-protocol
