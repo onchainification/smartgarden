@@ -1,9 +1,0 @@
-type ModuleDeployed @entity(immutable: true) {
-  id: Bytes!
-  module: Bytes! # address
-  vault: Bytes! # address
-  timestamp: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}

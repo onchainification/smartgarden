@@ -1,0 +1,20 @@
+# smartgarden-optimism-gauges
+# QmUeKoMUjS8znMTucD9tUgD81hLwwRjtc4ZrN3YkaTqik5
+# https://api.studio.thegraph.com/query/50162/smartgarden-optimism-gauges/version/latest
+# https://testnet.thegraph.com/explorer/subgraphs/EEurfeMcypf3QWgBdiWb3qaAyiFNnRve2gU8gPwmRKbW
+
+query UserGaugePositions {
+  gaugePositions(
+    where: {
+      user: "0xf55ab9d6eaab0614073cc1da5c29b093f6e3aebc"
+      balance_gt: "0"
+    }
+  ) {
+    gauge {
+      id
+      protocol
+      pool
+      pool_name
+    }
+  }
+}
