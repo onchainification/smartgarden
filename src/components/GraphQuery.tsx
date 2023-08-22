@@ -1,7 +1,6 @@
 export async function getBalance(_address: string) {
   // define url and query
-  var url =
-    "https://api.studio.thegraph.com/query/50162/smartgarden/v0.0.2e";
+  var url = "https://api.studio.thegraph.com/query/50162/smartgarden/v0.0.2e";
   var query = `{
     gaugePosition(id: "${_address}") {
       balance
@@ -11,7 +10,7 @@ export async function getBalance(_address: string) {
   // add request metadata
   var options = {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: query,
     }),
@@ -26,8 +25,7 @@ export async function getBalance(_address: string) {
   // determine balance or default to 0
   try {
     var balance = queryResult["data"]["gaugePosition"]["balance"];
-  }
-  catch {
+  } catch {
     var balance = 0;
   }
 
