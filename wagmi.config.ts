@@ -44,6 +44,8 @@ export default defineConfig({
           [chains.foundry.id]: HARVEST_PLUGIN_ADDRESS,
         },
       },
+      // collision due to duplicates in the forge-std and safe-contracts deps
+      exclude: ["IERC165.sol/**"],
     }),
     /**
      * Generates react hooks from your abis
