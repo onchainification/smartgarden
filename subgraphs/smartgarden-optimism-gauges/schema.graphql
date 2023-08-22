@@ -1,0 +1,18 @@
+type User @entity(immutable: true) {
+  id: Bytes! # address
+  gaugePositions: [GaugePosition!]! @derivedFrom(field: "user")
+}
+
+type Gauge @entity(immutable: true) {
+  id: Bytes! # address
+  protocol: String!
+  pool: Bytes
+  pool_name: String
+}
+
+type GaugePosition @entity {
+  id: String!
+  gauge: Gauge!
+  user: User!
+  balance: BigInt!
+}
