@@ -32,6 +32,9 @@ export default defineConfig({
      * @see https://wagmi.sh/cli/plugins/foundry
      */
     foundry({
+      forge: {
+        clean: true,
+      },
       deployments: {
         SmartGardenManager: {
           [chains.optimism.id]: SMART_GARDEN_MANAGER_ADDRESS,
