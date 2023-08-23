@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAccount, useNetwork } from "wagmi";
 
-import { request, gql } from "graphql-request";
+import { request } from "graphql-request";
 
 import { chainDetails } from "../helpers/chainDetails";
+import { GET_GAUGE_POSITIONS } from "./graphql/gaugePositions";
 
 export interface IGaugePositions {
   id: string;
@@ -19,25 +20,15 @@ async function getUserGaugePositions(
     if (!chainId) throw new Error("Missing Chain ID");
     if (!chainDetails[chainId].subgraphGauges)
       throw new Error("No Gauge subgraph url available");
-    const querySafeAddr = gql`
-      query UserGaugePositions {
-        gaugePositions(
-          where: {
-            user: "${safeAddress}"
-            balance_gt: "0"
-          }
-        ) {
-          gauge {
-            id
-            protocol
-            pool
-            pool_name
-          }
-        }
-      }
-    `;
+    const queryVars = {
+      safeAddr: `${safeAddress}`,
+    };
     const positions = (
-      await request(chainDetails[chainId].subgraphGauges, querySafeAddr)
+      await request(
+        chainDetails[chainId].subgraphGauges,
+        GET_GAUGE_POSITIONS,
+        queryVars,
+      )
     ).gaugePositions;
     const gaugeResults: IGaugePositions[] = [];
     positions.forEach((position: any) => {
