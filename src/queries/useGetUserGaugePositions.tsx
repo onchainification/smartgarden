@@ -1,19 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAccount } from "wagmi";
+import { useAccount, useNetwork } from "wagmi";
 
 import { request, gql } from "graphql-request";
 
-const SUBGRAPH_URL =
-  "https://api.studio.thegraph.com/proxy/50162/smartgarden-optimism-gauges/version/latest";
+import { chainDetails } from "../helpers/chainDetails";
 
 export interface IGaugePositions {
   id: string;
   pool_name: string;
 }
 
-async function getUserGaugePositions(safeAddress: string | undefined) {
+async function getUserGaugePositions(
+  safeAddress: string | undefined,
+  chainId: number | undefined,
+) {
   try {
     if (!safeAddress) throw new Error("No Safe Account");
+    if (!chainId) throw new Error("Missing Chain ID");
+    if (!chainDetails[chainId].subgraphGauges)
+      throw new Error("No Gauge subgraph url available");
     const querySafeAddr = gql`
       query UserGaugePositions {
         gaugePositions(
@@ -31,8 +36,9 @@ async function getUserGaugePositions(safeAddress: string | undefined) {
         }
       }
     `;
-    const positions = (await request(SUBGRAPH_URL, querySafeAddr))
-      .gaugePositions;
+    const positions = (
+      await request(chainDetails[chainId].subgraphGauges, querySafeAddr)
+    ).gaugePositions;
     const gaugeResults: IGaugePositions[] = [];
     positions.forEach((position: any) => {
       gaugeResults.push({
@@ -49,7 +55,8 @@ async function getUserGaugePositions(safeAddress: string | undefined) {
 
 export default function useGetUserGaugePositions() {
   const { address } = useAccount();
+  const { chain } = useNetwork();
   return useQuery(["userGaugePositions", address?.toLowerCase()], () =>
-    getUserGaugePositions(address?.toLowerCase()),
+    getUserGaugePositions(address?.toLowerCase(), chain?.id),
   );
 }
