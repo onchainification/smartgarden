@@ -1,10 +1,20 @@
 import "../styles/globals.css";
+
+import * as React from "react";
+import {
+  QueryClient,
+  QueryClientProvider,
+  Hydrate,
+} from "@tanstack/react-query";
+
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 
 import { SmartGardenManager } from "./components";
 
 export function App() {
+  const [queryClient] = React.useState(() => new QueryClient());
+
   /**
    * Wagmi hook for getting account information
    * @see https://wagmi.sh/docs/hooks/useAccount
@@ -20,9 +30,11 @@ export function App() {
 
       {isConnected && (
         <>
-          <hr />
-          <SmartGardenManager />
-          <hr />
+          <QueryClientProvider client={queryClient}>
+            <hr />
+            <SmartGardenManager />
+            <hr />
+          </QueryClientProvider>
         </>
       )}
     </>
