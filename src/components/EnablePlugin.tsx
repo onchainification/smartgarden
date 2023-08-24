@@ -12,6 +12,7 @@ import "../../styles/enablePlugin.css";
 import { encodeFunctionData } from "viem";
 
 import useGnosisBatch from "../queries/useGnosisBatch";
+import useGetUserGaugePositions from "../queries/useGetUserGaugePositions";
 
 import {
   smartGardenManagerABI,
@@ -19,19 +20,19 @@ import {
   harvesterPluginAddress,
 } from "../generated";
 
-// TODO: this gauge addr needs to be retrieve from subgraph. Probably auto-fill a select options?
-// https://optimistic.etherscan.io/address/0xa1034Ed2C9eb616d6F7f318614316e64682e7923
-const GAUGE_USDC_DOLA_ADDRESS = "0xa1034Ed2C9eb616d6F7f318614316e64682e7923";
-
 export function EnablePlugin() {
   const { mutate: gnosisBatch } = useGnosisBatch();
+  const { data: gaugePositions, isLoading, error } = useGetUserGaugePositions();
 
   // defaulting: 86400(1 - day)
   const formPluginConfig = useFormStore({
-    defaultValues: { gaugeAddr: GAUGE_USDC_DOLA_ADDRESS, cadence: 86400 },
+    defaultValues: { gaugeAddr: "", cadence: 86400 },
   });
   const cadenceValue = formPluginConfig.useValue(
     formPluginConfig.names.cadence,
+  );
+  const gaugeAddrValue = formPluginConfig.useValue(
+    formPluginConfig.names.gaugeAddr,
   );
 
   formPluginConfig.useSubmit(() => {
@@ -64,6 +65,13 @@ export function EnablePlugin() {
       parseInt(event.target.value),
     );
 
+  // Use to modify the value of `vault` in the <select> action for the gauges that safe is in
+  const onGaugeChangeAction = (event: React.ChangeEvent<HTMLSelectElement>) =>
+    formPluginConfig.setValue(
+      formPluginConfig.names.gaugeAddr,
+      event.target.value,
+    );
+
   // Options for feeding the <options> html -> (10min, 1h, 1d, 3d, 1w)
   const cadenceOptions = [
     { sec: 600, str: "Once every ten minutes" },
@@ -79,14 +87,23 @@ export function EnablePlugin() {
       <Form store={formPluginConfig} className="wrapper">
         <div className="field">
           <FormLabel name={formPluginConfig.names.gaugeAddr}>
-            Gauge Address
+            Gauges your Safe is currently active
           </FormLabel>
-          <FormInput
+          <FormField
             name={formPluginConfig.names.gaugeAddr}
+            value={gaugeAddrValue}
+            touchOnBlur={false}
             required
-            placeholder="0x.."
-            className="input"
-          />
+            render={<select onChange={onGaugeChangeAction} />}
+          >
+            {gaugePositions?.map((gauge, index) => {
+              return (
+                <option key={index} value={gauge.id}>
+                  {gauge.pool_name}
+                </option>
+              );
+            })}
+          </FormField>
           <FormError
             name={formPluginConfig.names.gaugeAddr}
             className="error"
