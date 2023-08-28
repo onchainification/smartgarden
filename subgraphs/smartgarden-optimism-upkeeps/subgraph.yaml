@@ -14,80 +14,14 @@ dataSources:
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        # - ConfigSet
-        # - FundsAdded
-        # - FundsWithdrawn
-        # - KeepersUpdated
-        # - OwnerFundsWithdrawn
-        # - OwnershipTransferRequested
-        # - OwnershipTransferred
-        # - Paused
-        # - PayeeshipTransferRequested
-        # - PayeeshipTransferred
-        # - PaymentWithdrawn
-        # - Unpaused
-        # - UpkeepAdminTransferRequested
-        # - UpkeepAdminTransferred
-        # - UpkeepCanceled
-        # - UpkeepCheckDataUpdated
-        # - UpkeepGasLimitSet
-        # - UpkeepMigrated
-        # - UpkeepPaused
         - UpkeepPerformed
-        # - UpkeepReceived
-        # - UpkeepRegistered
-        # - UpkeepUnpaused
       abis:
         - name: KeeperRegistry1_3
           file: ./abis/KeeperRegistry1_3.json
         - name: ERC20
           file: ./abis/ERC20.json
       eventHandlers:
-        # - event: ConfigSet((uint32,uint32,uint24,uint32,uint24,uint16,uint96,uint32,uint256,uint256,address,address))
-        #   handler: handleConfigSet
-        # - event: FundsAdded(indexed uint256,indexed address,uint96)
-        #   handler: handleFundsAdded
-        # - event: FundsWithdrawn(indexed uint256,uint256,address)
-        #   handler: handleFundsWithdrawn
-        # - event: KeepersUpdated(address[],address[])
-        #   handler: handleKeepersUpdated
-        # - event: OwnerFundsWithdrawn(uint96)
-        #   handler: handleOwnerFundsWithdrawn
-        # - event: OwnershipTransferRequested(indexed address,indexed address)
-        #   handler: handleOwnershipTransferRequested
-        # - event: OwnershipTransferred(indexed address,indexed address)
-        #   handler: handleOwnershipTransferred
-        # - event: Paused(address)
-        #   handler: handlePaused
-        # - event: PayeeshipTransferRequested(indexed address,indexed address,indexed address)
-        #   handler: handlePayeeshipTransferRequested
-        # - event: PayeeshipTransferred(indexed address,indexed address,indexed address)
-        #   handler: handlePayeeshipTransferred
-        # - event: PaymentWithdrawn(indexed address,indexed uint256,indexed address,address)
-        #   handler: handlePaymentWithdrawn
-        # - event: Unpaused(address)
-        #   handler: handleUnpaused
-        # - event: UpkeepAdminTransferRequested(indexed uint256,indexed address,indexed address)
-        #   handler: handleUpkeepAdminTransferRequested
-        # - event: UpkeepAdminTransferred(indexed uint256,indexed address,indexed address)
-        #   handler: handleUpkeepAdminTransferred
-        # - event: UpkeepCanceled(indexed uint256,indexed uint64)
-        #   handler: handleUpkeepCanceled
-        # - event: UpkeepCheckDataUpdated(indexed uint256,bytes)
-        #   handler: handleUpkeepCheckDataUpdated
-        # - event: UpkeepGasLimitSet(indexed uint256,uint96)
-        #   handler: handleUpkeepGasLimitSet
-        # - event: UpkeepMigrated(indexed uint256,uint256,address)
-        #   handler: handleUpkeepMigrated
-        # - event: UpkeepPaused(indexed uint256)
-        #   handler: handleUpkeepPaused
         - event: UpkeepPerformed(indexed uint256,indexed bool,indexed address,uint96,bytes)
           handler: handleUpkeepPerformed
           receipt: true
-        # - event: UpkeepReceived(indexed uint256,uint256,address)
-        #   handler: handleUpkeepReceived
-        # - event: UpkeepRegistered(indexed uint256,uint32,address)
-        #   handler: handleUpkeepRegistered
-        # - event: UpkeepUnpaused(indexed uint256)
-        #   handler: handleUpkeepUnpaused
       file: ./src/mapping.ts
