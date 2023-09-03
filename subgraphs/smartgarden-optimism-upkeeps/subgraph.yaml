@@ -20,6 +20,8 @@ dataSources:
           file: ./abis/KeeperRegistry1_3.json
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: Oracle
+          file: ./abis/Oracle.json
       eventHandlers:
         - event: UpkeepPerformed(indexed uint256,indexed bool,indexed address,uint96,bytes)
           handler: handleUpkeepPerformed

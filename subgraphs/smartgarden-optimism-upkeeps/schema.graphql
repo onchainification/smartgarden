@@ -15,9 +15,13 @@ type Harvest @entity(immutable: true) {
   hash: Bytes!
   block: BigInt!
   timestamp: BigInt!
-  link_used: BigInt! # uint96
-  cost: BigInt
-  msig: Bytes! # address
+  account: Bytes! # address
+  n_accounts: BigInt!
+  link_price: BigDecimal!
+  link_used: BigInt!
+  link_used_per_account: BigInt!
+  cost: BigDecimal!
+  cost_per_account: BigDecimal!
 
   # gauge: Bytes! # address
   # token: Bytes! # address
