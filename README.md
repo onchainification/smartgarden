@@ -1,6 +1,12 @@
-# SmartGarden
+# 🪴 SmartGarden
 
 ![204610239-organic-hydroponic-farm-with-rows-of-healthy-plants-and-sustainable-practices-ai-generated](https://github.com/onchainification/smartgarden/assets/2835259/479b4572-0df7-4123-9891-8fb11d5b7fe3)
+
+## SmartCon 2023: Presentation Video
+
+10 minute presentation of SmartGarden at Chainlink's SmartCon 2023.
+
+_SmartGarden: Bringing Autonomy to Ethereum's Infinite Garden_: [https://smartcon.chain.link/video-on-demand/smartgarden-bringing-autonomy-to-ethereums-infinite-garden](https://smartcon.chain.link/video-on-demand/smartgarden-bringing-autonomy-to-ethereums-infinite-garden)
 
 ## Demo Video
 
