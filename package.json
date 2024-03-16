@@ -20,7 +20,7 @@
     "@ariakit/react": "^0.2.16",
     "@gnosis.pm/safe-apps-sdk": "^7.8.0",
     "@heroicons/react": "^2.0.18",
-    "@openzeppelin/contracts": "4.9.3",
+    "@openzeppelin/contracts": "4.9.6",
     "@rainbow-me/rainbowkit": "^1.0.7",
     "@tanstack/react-query": "^4.24.10",
     "@tanstack/react-table": "^8.9.3",
