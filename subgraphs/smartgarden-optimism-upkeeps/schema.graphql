@@ -1,0 +1,31 @@
+type UpkeepPerformed @entity(immutable: true) {
+  id: Bytes!
+  KeeperRegistry1_3_id: BigInt! # uint256
+  success: Boolean! # bool
+  from: Bytes! # address
+  payment: BigInt! # uint96
+  performData: Bytes! # bytes
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Harvest @entity(immutable: true) {
+  id: Bytes!
+  hash: Bytes!
+  block: BigInt!
+  timestamp: BigInt!
+  account: Bytes! # address
+  n_accounts: BigInt!
+  link_price: BigDecimal!
+  link_used: BigInt!
+  link_used_per_account: BigInt!
+  cost: BigDecimal!
+  cost_per_account: BigDecimal!
+
+  # gauge: Bytes! # address
+  # token: Bytes! # address
+  # amount: BigInt!
+  # revenue: BigInt!
+  # profit: BigInt!
+}

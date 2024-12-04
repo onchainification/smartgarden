@@ -1,0 +1,29 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: KeeperRegistry1_3
+    network: optimism
+    source:
+      address: "0x75c0530885F385721fddA23C539AF3701d6183D4"
+      abi: KeeperRegistry1_3
+      startBlock: 108168414 # deploy block is 22422252
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - UpkeepPerformed
+      abis:
+        - name: KeeperRegistry1_3
+          file: ./abis/KeeperRegistry1_3.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: Oracle
+          file: ./abis/Oracle.json
+      eventHandlers:
+        - event: UpkeepPerformed(indexed uint256,indexed bool,indexed address,uint96,bytes)
+          handler: handleUpkeepPerformed
+          receipt: true
+      file: ./src/mapping.ts
